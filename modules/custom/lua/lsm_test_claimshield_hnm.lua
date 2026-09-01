@@ -25,7 +25,12 @@ require('modules/module_utils')
 -----------------------------------
 local m = Module:new('lsm_test_claimshield_hnm')
 
-local claimshieldTime = 7500
+-- Raised well above retail's ~5-7.5s for testing. The lottery draws from the enmity
+-- list when this expires: if nobody has landed a hit by then, utils.randomEntry gets
+-- an empty table, claimWinner is nil, and NO lottery message is emitted at all --
+-- which reads exactly like the module being broken. 30s gives a group of testers
+-- time to actually engage. Lower it to 7500 to match retail pacing.
+local claimshieldTime = 30000
 
 -- NOTE: These names are as they are as filenames, matching claim_shield.lua.
 -- { zone name, mob name }
