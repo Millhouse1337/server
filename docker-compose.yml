@@ -3,9 +3,15 @@
 # Adapted from the example in docker/README.md. Uses the prebuilt public image, so
 # nothing is compiled on the droplet.
 #
-# First-time setup (see DEPLOY-DROPLET.md):
-#   docker run --rm -v losmeshes:/losmeshes -v navmeshes:/navmeshes ghcr.io/landsandboat/ximeshes:latest
+# First-time setup:
+#   git submodule update --init --depth 1     # navmeshes, losmeshes, ximeshes
 #   docker compose up -d
+#
+# NOTE: meshes are bind-mounted from the repo's own submodules rather than taken from
+# the ghcr.io/landsandboat/ximeshes image that docker/README.md suggests. That image
+# ships navmeshes and ximeshes but NO losmeshes, and the README's command does not
+# mount ximeshes at all -- so zone.cpp would fail to find ximeshes/<zone>.ximesh and
+# losmeshes/<zone>.obj (line of sight).
 #
 # This file is gitignored (.gitignore line 241), so it will not dirty the branch.
 
@@ -22,8 +28,9 @@ x-common: &common
     XI_NETWORK_ZMQ_IP: world
     XI_NETWORK_SQL_HOST: database
   volumes:
-    - losmeshes:/server/losmeshes
-    - navmeshes:/server/navmeshes
+    - ./navmeshes:/server/navmeshes
+    - ./losmeshes:/server/losmeshes
+    - ./ximeshes:/server/ximeshes
     # Our custom Lua modules + init.txt. Lua modules only need a mount, not an image
     # rebuild -- that is only required for C++ modules.
     - ./modules:/server/modules
@@ -112,7 +119,3 @@ services:
 
 volumes:
   database:
-  losmeshes:
-    external: true
-  navmeshes:
-    external: true
