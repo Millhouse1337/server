@@ -71,6 +71,25 @@ services:
       database:
         condition: service_healthy
 
+  # dbtool's update re-imports zone_settings.sql, which resets zoneip to 127.0.0.1 and
+  # leaves every client hung at "Downloading data...". zone_settings.sql is NOT in
+  # dbtool's protected player_data list, so this happens on every `docker compose up`.
+  # Re-apply the real address here so it cannot be silently undone again.
+  zoneip:
+    image: mariadb:lts
+    environment:
+      <<: *dbcreds
+      SERVER_IP: ${SERVER_IP:?set SERVER_IP in .env}
+    command:
+      - sh
+      - -c
+      - mariadb -h database -u root -p"$$MARIADB_ROOT_PASSWORD" xidb -e "UPDATE zone_settings SET zoneip = '$$SERVER_IP';"
+    depends_on:
+      database:
+        condition: service_healthy
+      database-update:
+        condition: service_completed_successfully
+
   connect:
     <<: *common
     command: ["/server/xi_connect"]
@@ -85,6 +104,8 @@ services:
         restart: true
       database-update:
         condition: service_completed_successfully
+      zoneip:
+        condition: service_completed_successfully
 
   search:
     <<: *common
@@ -97,6 +118,8 @@ services:
         condition: service_healthy
         restart: true
       database-update:
+        condition: service_completed_successfully
+      zoneip:
         condition: service_completed_successfully
 
   # NOTE: port 8088 (the HTTP API) is deliberately NOT published. It has no auth and
@@ -111,6 +134,8 @@ services:
         restart: true
       database-update:
         condition: service_completed_successfully
+      zoneip:
+        condition: service_completed_successfully
 
   map:
     <<: *common
@@ -123,6 +148,8 @@ services:
         condition: service_healthy
         restart: true
       database-update:
+        condition: service_completed_successfully
+      zoneip:
         condition: service_completed_successfully
       world:
         condition: service_started
