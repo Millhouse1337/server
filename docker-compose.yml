@@ -27,6 +27,11 @@ x-common: &common
     <<: *dbcreds
     XI_NETWORK_ZMQ_IP: world
     XI_NETWORK_SQL_HOST: database
+    # Accept any client version. The published image expects CLIENT_VER 30260805_0 with
+    # VER_LOCK 2 (equal or newer), which rejects a retail client with FFXI-3331 "The
+    # game's data has been updated". This is a test server for a fixed group, so drop
+    # the check rather than force everyone to update their client.
+    XI_LOGIN_VER_LOCK: 0
   volumes:
     - ./navmeshes:/server/navmeshes
     - ./losmeshes:/server/losmeshes
