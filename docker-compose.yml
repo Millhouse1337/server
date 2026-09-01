@@ -31,9 +31,14 @@ x-common: &common
     - ./navmeshes:/server/navmeshes
     - ./losmeshes:/server/losmeshes
     - ./ximeshes:/server/ximeshes
-    # Our custom Lua modules + init.txt. Lua modules only need a mount, not an image
-    # rebuild -- that is only required for C++ modules.
-    - ./modules:/server/modules
+    # Mount ONLY our own module files, NOT the whole modules/ directory. The image is
+    # built from upstream's latest commit and ships its own module_utils.lua, which
+    # defines xi.module.registry; mounting this fork's older modules/ tree over it makes
+    # the loader fail with "attempt to get length of field 'registry'" and silently load
+    # nothing. claim_shield.lua and test_npcs_in_gm_home.lua already exist in the image.
+    - ./modules/init.txt:/server/modules/init.txt:ro
+    - ./modules/custom/lua/lsm_test_spawn_announce.lua:/server/modules/custom/lua/lsm_test_spawn_announce.lua:ro
+    - ./modules/custom/lua/lsm_test_claimshield_hnm.lua:/server/modules/custom/lua/lsm_test_claimshield_hnm.lua:ro
     # NOTE: do NOT mount tools/config.yaml from this repo; it carries a Windows
     # mysql_bin path that is wrong inside the container.
 
