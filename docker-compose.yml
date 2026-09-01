@@ -1,0 +1,118 @@
+# LSB test server for LSM addon / event-system testing.
+#
+# Adapted from the example in docker/README.md. Uses the prebuilt public image, so
+# nothing is compiled on the droplet.
+#
+# First-time setup (see DEPLOY-DROPLET.md):
+#   docker run --rm -v losmeshes:/losmeshes -v navmeshes:/navmeshes ghcr.io/landsandboat/ximeshes:latest
+#   docker compose up -d
+#
+# This file is gitignored (.gitignore line 241), so it will not dirty the branch.
+
+x-dbcreds: &dbcreds
+  MARIADB_ROOT_PASSWORD: '${MARIADB_ROOT_PASSWORD:?set this in .env}'
+  MARIADB_DATABASE: xidb
+  MARIADB_USER: xiadmin
+  MARIADB_PASSWORD: '${MARIADB_PASSWORD:?set this in .env}'
+
+x-common: &common
+  image: ghcr.io/landsandboat/server:latest
+  environment:
+    <<: *dbcreds
+    XI_NETWORK_ZMQ_IP: world
+    XI_NETWORK_SQL_HOST: database
+  volumes:
+    - losmeshes:/server/losmeshes
+    - navmeshes:/server/navmeshes
+    # Our custom Lua modules + init.txt. Lua modules only need a mount, not an image
+    # rebuild -- that is only required for C++ modules.
+    - ./modules:/server/modules
+    # NOTE: do NOT mount tools/config.yaml from this repo; it carries a Windows
+    # mysql_bin path that is wrong inside the container.
+
+services:
+  database:
+    image: mariadb:lts
+    restart: unless-stopped
+    command: ['--character-set-server=utf8mb4', '--collation-server=utf8mb4_general_ci']
+    environment:
+      <<: *dbcreds
+    volumes:
+      - database:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Imports/migrates the database, then exits. The other services wait for it.
+  database-update:
+    <<: *common
+    command: ["python", "/server/tools/dbtool.py", "update"]
+    depends_on:
+      database:
+        condition: service_healthy
+
+  connect:
+    <<: *common
+    command: ["/server/xi_connect"]
+    restart: unless-stopped
+    ports:
+      - "54001:54001"   # login view / lobby
+      - "54230:54230"   # login data (TCP)
+      - "54231:54231"   # login auth
+    depends_on:
+      database:
+        condition: service_healthy
+        restart: true
+      database-update:
+        condition: service_completed_successfully
+
+  search:
+    <<: *common
+    command: ["/server/xi_search"]
+    restart: unless-stopped
+    ports:
+      - "54002:54002"
+    depends_on:
+      database:
+        condition: service_healthy
+        restart: true
+      database-update:
+        condition: service_completed_successfully
+
+  # NOTE: port 8088 (the HTTP API) is deliberately NOT published. It has no auth and
+  # no TLS. Leave it internal.
+  world:
+    <<: *common
+    command: ["/server/xi_world"]
+    restart: unless-stopped
+    depends_on:
+      database:
+        condition: service_healthy
+        restart: true
+      database-update:
+        condition: service_completed_successfully
+
+  map:
+    <<: *common
+    command: ["/server/xi_map"]
+    restart: unless-stopped
+    ports:
+      - "54230:54230/udp"   # map traffic (UDP)
+    depends_on:
+      database:
+        condition: service_healthy
+        restart: true
+      database-update:
+        condition: service_completed_successfully
+      world:
+        condition: service_started
+
+volumes:
+  database:
+  losmeshes:
+    external: true
+  navmeshes:
+    external: true

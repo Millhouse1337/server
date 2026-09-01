@@ -38,3 +38,6 @@
 
 custom/commands/
 custom/lua/test_npcs_in_gm_home.lua
+custom/lua/claim_shield.lua
+custom/lua/lsm_test_spawn_announce.lua
+custom/lua/lsm_test_claimshield_hnm.lua
