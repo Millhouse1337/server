@@ -40,8 +40,12 @@ x-common: &common
     # built from upstream's latest commit and ships its own module_utils.lua, which
     # defines xi.module.registry; mounting this fork's older modules/ tree over it makes
     # the loader fail with "attempt to get length of field 'registry'" and silently load
-    # nothing. claim_shield.lua and test_npcs_in_gm_home.lua already exist in the image.
+    # nothing. test_npcs_in_gm_home.lua already exists in the image.
     - ./modules/init.txt:/server/modules/init.txt:ro
+    # Ours, not the image's: Cerberus, Hydra and Khimaira are removed from its list so
+    # only lsm_test_claimshield_hnm.lua shields them (30s). The image's copy would run
+    # a second 7.5s lottery on every pop.
+    - ./modules/custom/lua/claim_shield.lua:/server/modules/custom/lua/claim_shield.lua:ro
     - ./modules/custom/lua/lsm_test_spawn_announce.lua:/server/modules/custom/lua/lsm_test_spawn_announce.lua:ro
     - ./modules/custom/lua/lsm_test_claimshield_hnm.lua:/server/modules/custom/lua/lsm_test_claimshield_hnm.lua:ro
     # NOTE: do NOT mount tools/config.yaml from this repo; it carries a Windows
