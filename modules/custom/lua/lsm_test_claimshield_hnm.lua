@@ -3,6 +3,8 @@
 --
 -- Extends claim-shield behaviour to the six HNMs that stock claim_shield.lua does NOT
 -- cover: Fafnir, Nidhogg, Behemoth, King Behemoth, Adamantoise and Aspidochelone.
+-- Also takes over the three ToAU HNMs (Cerberus, Hydra, Khimaira) from the stock
+-- module, so they get the same 30s test window.
 --
 -- Why this exists:
 --   The LSM addon's Claim Shield feature is a sequence -- spawn announcement, then a
@@ -42,6 +44,12 @@ local nmsToShield =
     { 'Dragons_Aery',       'Nidhogg'       },
     { 'Valley_of_Sorrows',  'Adamantoise'   },
     { 'Valley_of_Sorrows',  'Aspidochelone' },
+
+    -- ToAU HNMs. These were moved here from claim_shield.lua so they get the 30s test
+    -- window -- leaving them in both would run two lotteries per pop.
+    { 'Caedarva_Mire',      'Khimaira'      },
+    { 'Mount_Zhayolm',      'Cerberus'      },
+    { 'Wajaom_Woodlands',   'Hydra'         },
 }
 
 -- Find the position of a target entity in a table, only if they have matching ids

@@ -17,7 +17,6 @@ local nmsToShield =
     { 'Attohwa_Chasm', 'Citipati' },
     { 'Attohwa_Chasm', 'Tiamat' },
     { 'Attohwa_Chasm', 'Xolotl' },
-    { 'Caedarva_Mire', 'Khimaira' },
     { 'Castle_Oztroja', 'Mee_Deggi_the_Punisher' },
     { 'Castle_Oztroja', 'Quu_Domi_the_Gallant' },
     { 'FeiYin', 'Capricious_Cassie' },
@@ -34,7 +33,6 @@ local nmsToShield =
     { 'Lufaise_Meadows', 'Padfoot' },
     { 'Maze_of_Shakhrami', 'Argus' },
     { 'Maze_of_Shakhrami', 'Leech_King' },
-    { 'Mount_Zhayolm', 'Cerberus' },
     { 'Rolanberry_Fields', 'Eldritch_Edge' },
     { 'Rolanberry_Fields', 'Simurgh' },
     { 'Rolanberry_Fields_[S]', 'Lamina' },
@@ -45,7 +43,6 @@ local nmsToShield =
     { 'South_Gustaberg', 'Leaping_Lizzy' },
     { 'Uleguerand_Range', 'Jormungand' },
     { 'Valkurm_Dunes', 'Valkurm_Emperor' },
-    { 'Wajaom_Woodlands', 'Hydra' },
     { 'Western_Altepa_Desert', 'King_Vinegarroon' },
 }
 
